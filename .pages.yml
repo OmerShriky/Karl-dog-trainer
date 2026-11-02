@@ -191,6 +191,7 @@ content:
           - { name: sending, label: הודעה בזמן שליחה, type: string }
           - { name: success, label: הודעה אחרי שליחה, type: string }
           - { name: error, label: הודעה אם השליחה נכשלה, type: string }
+          - { name: sheetsUrl, label: "כתובת הגיליון ב-Google Sheets (לא לשנות)", type: string }
           - { name: web3formsKey, label: "מפתח Web3Forms (לא לשנות)", type: string }
 
       - name: footer
