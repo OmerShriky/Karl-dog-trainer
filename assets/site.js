@@ -89,6 +89,7 @@ const ui = {
       <div class="field"><label for="f-name">${esc(C.contact.nameLabel)}</label><input id="f-name" name="name" autocomplete="name" required></div>
       <div class="field"><label for="f-phone">${esc(C.contact.phoneLabel)}</label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" required></div>
       <div class="field field-wide"><label for="f-msg">${esc(C.contact.messageLabel)}</label><textarea id="f-msg" name="message" rows="4"></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="f-website">אתר</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
       <div class="form-actions field-wide">
         <button class="btn" type="submit">${esc(C.contact.submit)}</button>
         <p class="form-status" role="status" aria-live="polite"></p>
@@ -106,16 +107,25 @@ function bindForm(root) {
     if (phone.value.replace(/\D/g, '').length < 9) { phone.setAttribute('aria-invalid', 'true'); status.textContent = 'נא למלא מספר טלפון תקין, למשל 050-1234567.'; phone.focus(); return; }
     const text = `היי קרל, אני ${name.value.trim()} (${phone.value.trim()}).\n${msg.value.trim()}`;
     const waLink = `<a href="${wa(text)}" ${ext}>שליחה בוואטסאפ</a>`;
-    // Without a Web3Forms key the form falls back to WhatsApp
-    if (!C.contact.web3formsKey) { status.innerHTML = `אפשר לשלוח לי את הפרטים בוואטסאפ: ${waLink}`; return; }
+    const sheetsUrl = C.contact.sheetsUrl, w3fKey = C.contact.web3formsKey;
+    // Nowhere to send yet: offer WhatsApp instead
+    if (!sheetsUrl && !w3fKey) { status.innerHTML = `אפשר לשלוח לי את הפרטים בוואטסאפ: ${waLink}`; return; }
+    // Hidden field that only bots fill in
+    if (f.querySelector('#f-website').value) { status.textContent = C.contact.success; f.reset(); return; }
+    const lead = { name: name.value.trim(), phone: phone.value.trim(), message: msg.value.trim(), page: location.pathname };
     btn.disabled = true; status.textContent = C.contact.sending;
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ access_key: C.contact.web3formsKey, subject: `פנייה חדשה מהאתר: ${name.value.trim()}`, from_name: 'האתר של קרל', name: name.value.trim(), phone: phone.value.trim(), message: msg.value.trim() })
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+      if (sheetsUrl) {
+        // Google Apps Script: adds a row to the sheet and emails Karl. no-cors, so the reply can't be read.
+        await fetch(sheetsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(lead) });
+      } else {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ access_key: w3fKey, subject: `פנייה חדשה מהאתר: ${lead.name}`, from_name: 'האתר של קרל', ...lead })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+      }
       status.textContent = C.contact.success;
       f.reset(); f.classList.add('is-sent');
       track('generate_lead', { form: 'contact' });

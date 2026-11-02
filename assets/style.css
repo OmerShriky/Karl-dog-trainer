@@ -283,3 +283,6 @@ h1, h2, h3 { font-weight: 600; }
 /* Email next to WhatsApp in the header */
 .header-ctas { display: flex; gap: 8px; align-items: center; }
 .btn-mail { background: var(--surface); color: var(--accent); }
+
+/* Spam trap field, hidden from people */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
