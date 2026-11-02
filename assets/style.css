@@ -284,5 +284,8 @@ h1, h2, h3 { font-weight: 600; }
 .header-ctas { display: flex; gap: 8px; align-items: center; }
 .btn-mail { background: var(--surface); color: var(--accent); }
 
+/* Line breaks typed in content.json (\n) show as new lines */
+.review blockquote, .faq-a p, .svc-body > p { white-space: pre-line; }
+
 /* Spam trap field, hidden from people */
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
