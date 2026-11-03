@@ -1,6 +1,6 @@
 // Google Tag Manager. Paste your container ID between the quotes, for example 'GTM-AB12CD3'.
 // While it is empty, nothing is tracked.
-window.GTM_ID = '';
+window.GTM_ID = 'GTM-PS2XG7G7';
 
 (function (w, d, id) {
   w.dataLayer = w.dataLayer || [];
