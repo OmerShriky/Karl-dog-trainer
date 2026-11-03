@@ -288,4 +288,6 @@ h1, h2, h3 { font-weight: 600; }
 .review blockquote, .faq-a p, .svc-body > p { white-space: pre-line; }
 
 /* Spam trap field, hidden from people */
-.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+/* Safety net: nothing may push the page sideways */
+html, body { overflow-x: clip; }
