@@ -145,6 +145,31 @@ document.addEventListener('click', e => {
   else if (a.dataset.track) track('social_click', { link_label: a.dataset.track });
 });
 
+// Services and FAQ tabs: which one was opened, and for how many seconds it stayed open
+const openSince = new Map();
+const itemInfo = d => ({ item_type: d.classList.contains('svc') ? 'service' : 'faq', item_name: (d.querySelector('.svc-title, .faq-q')?.textContent || '').trim() });
+function endView(d, keep) {
+  const t = openSince.get(d); if (t == null) return;
+  const sec = Math.round((performance.now() - t) / 1000);
+  if (keep) openSince.set(d, null); else openSince.delete(d);
+  if (sec >= 1) track('item_view_time', { ...itemInfo(d), view_seconds: sec });
+}
+document.addEventListener('click', e => {
+  const sum = e.target.closest('details.svc > summary, details.faq-item > summary'); if (!sum) return;
+  const d = sum.parentElement;
+  setTimeout(() => {
+    if (d.open) { openSince.set(d, performance.now()); track('item_open', itemInfo(d)); }
+    else endView(d);
+  }, 0);
+});
+// Leaving the tab or the page ends the timer; coming back restarts it for tabs still open
+document.addEventListener('visibilitychange', () => {
+  openSince.forEach((t, d) => {
+    if (document.hidden) endView(d, true);
+    else if (t == null && d.open) openSince.set(d, performance.now());
+  });
+});
+
 function render() {
   const view = document.body.dataset.view || 'home';
   const D = window.DESIGN;
